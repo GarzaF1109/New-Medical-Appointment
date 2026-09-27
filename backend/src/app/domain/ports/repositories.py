@@ -62,7 +62,7 @@ class AppointmentRepository(ABC):
 
 
 class PatientRepository(ABC):
-    """Contrato de lectura para pacientes."""
+    """Contrato de persistencia para pacientes."""
 
     @abstractmethod
     def get(self, patient_id: int) -> Patient | None:
@@ -72,9 +72,21 @@ class PatientRepository(ABC):
     def list_all(self) -> list[Patient]:
         """Devuelve todos los pacientes, ordenados por nombre."""
 
+    @abstractmethod
+    def add(self, patient: Patient) -> Patient:
+        """Persiste un paciente nuevo y devuelve la instancia con su ID."""
+
+    @abstractmethod
+    def update(self, patient: Patient) -> Patient:
+        """Persiste los cambios de un paciente existente."""
+
+    @abstractmethod
+    def delete(self, patient_id: int) -> None:
+        """Elimina un paciente de forma definitiva."""
+
 
 class DoctorRepository(ABC):
-    """Contrato de lectura para doctores."""
+    """Contrato de persistencia para doctores."""
 
     @abstractmethod
     def get(self, doctor_id: int) -> Doctor | None:
@@ -83,3 +95,15 @@ class DoctorRepository(ABC):
     @abstractmethod
     def list_all(self) -> list[Doctor]:
         """Devuelve todos los doctores, ordenados por nombre."""
+
+    @abstractmethod
+    def add(self, doctor: Doctor) -> Doctor:
+        """Persiste un doctor nuevo y devuelve la instancia con su ID."""
+
+    @abstractmethod
+    def update(self, doctor: Doctor) -> Doctor:
+        """Persiste los cambios de un doctor existente."""
+
+    @abstractmethod
+    def delete(self, doctor_id: int) -> None:
+        """Elimina un doctor de forma definitiva."""

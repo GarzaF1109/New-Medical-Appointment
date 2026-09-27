@@ -18,7 +18,9 @@ from app.infrastructure.persistence.mappers import (
     appointment_to_domain,
     appointment_to_model,
     doctor_to_domain,
+    doctor_to_model,
     patient_to_domain,
+    patient_to_model,
 )
 from app.infrastructure.persistence.models import (
     AppointmentModel,
@@ -104,7 +106,7 @@ class SqlAlchemyAppointmentRepository(AppointmentRepository):
 
 
 class SqlAlchemyPatientRepository(PatientRepository):
-    """Lectura de pacientes sobre una sesion SQLAlchemy."""
+    """Persistencia de pacientes sobre una sesion SQLAlchemy."""
 
     def __init__(self, session: Session) -> None:
         self._session = session
@@ -117,9 +119,29 @@ class SqlAlchemyPatientRepository(PatientRepository):
         rows = self._session.scalars(select(PatientModel).order_by(PatientModel.full_name)).all()
         return [patient_to_domain(row) for row in rows]
 
+    def add(self, patient: Patient) -> Patient:
+        model = patient_to_model(patient)
+        self._session.add(model)
+        self._session.flush()
+        return patient_to_domain(model)
+
+    def update(self, patient: Patient) -> Patient:
+        model = self._session.get(PatientModel, patient.id)
+        if model is None:
+            raise ValueError(f"El paciente {patient.id} desaparecio durante la actualizacion.")
+        patient_to_model(patient, model)
+        self._session.flush()
+        return patient_to_domain(model)
+
+    def delete(self, patient_id: int) -> None:
+        model = self._session.get(PatientModel, patient_id)
+        if model is not None:
+            self._session.delete(model)
+            self._session.flush()
+
 
 class SqlAlchemyDoctorRepository(DoctorRepository):
-    """Lectura de doctores sobre una sesion SQLAlchemy."""
+    """Persistencia de doctores sobre una sesion SQLAlchemy."""
 
     def __init__(self, session: Session) -> None:
         self._session = session
@@ -131,3 +153,23 @@ class SqlAlchemyDoctorRepository(DoctorRepository):
     def list_all(self) -> list[Doctor]:
         rows = self._session.scalars(select(DoctorModel).order_by(DoctorModel.full_name)).all()
         return [doctor_to_domain(row) for row in rows]
+
+    def add(self, doctor: Doctor) -> Doctor:
+        model = doctor_to_model(doctor)
+        self._session.add(model)
+        self._session.flush()
+        return doctor_to_domain(model)
+
+    def update(self, doctor: Doctor) -> Doctor:
+        model = self._session.get(DoctorModel, doctor.id)
+        if model is None:
+            raise ValueError(f"El doctor {doctor.id} desaparecio durante la actualizacion.")
+        doctor_to_model(doctor, model)
+        self._session.flush()
+        return doctor_to_domain(model)
+
+    def delete(self, doctor_id: int) -> None:
+        model = self._session.get(DoctorModel, doctor_id)
+        if model is not None:
+            self._session.delete(model)
+            self._session.flush()
