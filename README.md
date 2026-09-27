@@ -29,8 +29,8 @@ newmedicalappointmentapp/
 │   │   ├── infrastructure/   # SQLAlchemy, Twilio, reloj, config, OTel
 │   │   └── presentation/     # Routers, esquemas, errores HTTP, DI
 │   └── tests/
-│       ├── unit/             # Sin E/S — 85 pruebas
-│       └── integration/      # API + base de datos — 28 pruebas
+│       ├── unit/             # Sin E/S — 129 pruebas
+│       └── integration/      # API + base de datos — 61 pruebas
 ├── frontend/
 │   └── src/
 │       ├── api/              # Cliente HTTP tipado y errores
@@ -62,8 +62,8 @@ Detalle en [`docs/architecture/components.md`](docs/architecture/components.md).
 
 | Metrica | Valor |
 |---|---|
-| Pruebas backend | 113 en verde |
-| Cobertura backend | 93% (umbral exigido: 80%) |
+| Pruebas backend | 190 en verde |
+| Cobertura backend | 94% (umbral exigido: 80%) |
 | Pruebas frontend | 14 en verde |
 | Linter | `ruff check` sin hallazgos |
 | Tipos | `tsc --noEmit` sin errores |

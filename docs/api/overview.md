@@ -38,9 +38,29 @@ mantiene a mano, por lo que no puede desincronizarse de la implementacion.
 | Metodo | Ruta | Descripcion |
 |---|---|---|
 | `GET` | `/patients` · `/patients/{id}` | Pacientes |
+| `POST` | `/patients` | Registrar un paciente |
+| `PATCH` | `/patients/{id}` | Editar un paciente (parcial) |
+| `DELETE` | `/patients/{id}` | Eliminar un paciente |
 | `GET` | `/patients/{id}/appointments` | Historial del paciente |
 | `GET` | `/doctors` · `/doctors/{id}` | Doctores |
+| `POST` | `/doctors` | Registrar un doctor |
+| `PATCH` | `/doctors/{id}` | Editar un doctor (parcial) |
+| `DELETE` | `/doctors/{id}` | Eliminar un doctor |
 | `GET` | `/doctors/{id}/appointments` | Agenda del doctor |
+
+### Edicion parcial de catalogos
+
+`PATCH` solo toca los campos presentes en el cuerpo. La distincion entre "no
+enviado" y "enviado como `null`" es significativa: omitir `phone` lo conserva,
+mientras que enviar `"phone": null` deja al paciente sin telefono. Lo mismo
+aplica a `medicalLicenseNumber` en doctores.
+
+### Baja de catalogos
+
+Un paciente o un doctor con citas **vigentes** -ni canceladas ni atendidas- no
+puede eliminarse: la API responde `409 CONFLICT`. Primero hay que cancelar esas
+citas, que es la accion que conserva la trazabilidad clinica. Al eliminar a la
+persona, su historial de citas ya cerradas se borra en cascada.
 
 ### Operacion
 
