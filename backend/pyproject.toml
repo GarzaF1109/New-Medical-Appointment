@@ -1,0 +1,91 @@
+[project]
+name = "medical-appointment-api"
+version = "1.0.0"
+description = "API de gestion de citas medicas en arquitectura por capas"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "httpx>=0.27",
+    "alembic>=1.14",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+observability = [
+    "opentelemetry-sdk>=1.29",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.29",
+    "opentelemetry-instrumentation-fastapi>=0.50b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.50b0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/app"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "unit: pruebas unitarias aisladas, sin E/S",
+    "integration: pruebas que tocan base de datos u otros adaptadores",
+    "e2e: recorridos completos de usuario a traves de la API",
+]
+
+[tool.coverage.run]
+source = ["src/app"]
+branch = true
+omit = ["*/observability/*", "*/seed.py"]
+
+[tool.coverage.report]
+# La guia AIVARA exige al menos 80% de cobertura en logica de negocio.
+fail_under = 80
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "D"]
+ignore = [
+    "D107",   # El constructor se documenta en la docstring de la clase.
+    "D203",
+    "D213",
+    "N812",   # `date as Date` evita colisionar con los campos llamados `date`.
+    "N818",   # La guia AIVARA nombra las excepciones base sin sufijo `Error`.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
+# Los repositorios y adaptadores heredan la documentacion de su puerto.
+"src/app/infrastructure/persistence/sqlalchemy_repositories.py" = ["D102"]
+"src/app/infrastructure/clock.py" = ["D102"]
+"src/app/infrastructure/notifications/logging_sender.py" = ["D102"]
+# `Depends()` y `Query()` en valores por defecto es el idioma de FastAPI.
+"src/app/presentation/api/v1/routers/*" = ["B008"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+warn_unused_ignores = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
