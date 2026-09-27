@@ -26,9 +26,14 @@ class PatientModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    birth_date: Mapped[Date] = mapped_column(SADate, nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    appointments: Mapped[list[AppointmentModel]] = relationship(back_populates="patient")
+    # La cascada la ejecuta el ORM, no la base: asi el comportamiento es el
+    # mismo en SQLite -que ignora ON DELETE salvo con PRAGMA- y en PostgreSQL.
+    appointments: Mapped[list[AppointmentModel]] = relationship(
+        back_populates="patient", cascade="all, delete-orphan"
+    )
 
 
 class DoctorModel(Base):
@@ -41,7 +46,9 @@ class DoctorModel(Base):
     speciality: Mapped[str] = mapped_column(String(120), nullable=False)
     medical_license_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    appointments: Mapped[list[AppointmentModel]] = relationship(back_populates="doctor")
+    appointments: Mapped[list[AppointmentModel]] = relationship(
+        back_populates="doctor", cascade="all, delete-orphan"
+    )
 
 
 class AppointmentModel(Base):

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import date
 
 from sqlalchemy import select
 
@@ -12,10 +13,10 @@ from app.infrastructure.persistence.models import DoctorModel, PatientModel
 logger = logging.getLogger(__name__)
 
 _PATIENTS = [
-    ("Ana Maria Lopez", "8112345678"),
-    ("Carlos Ramirez Soto", "8187654321"),
-    ("Lucia Fernandez Cruz", None),
-    ("Miguel Angel Torres", "5512349876"),
+    ("Ana Maria Lopez", date(1988, 3, 14), "8112345678"),
+    ("Carlos Ramirez Soto", date(1975, 11, 2), "8187654321"),
+    ("Lucia Fernandez Cruz", date(2001, 7, 23), None),
+    ("Miguel Angel Torres", date(1993, 1, 9), "5512349876"),
 ]
 
 _DOCTORS = [
@@ -33,7 +34,12 @@ def seed() -> None:
             logger.info("La base ya contiene datos; no se siembra nada.")
             return
 
-        session.add_all([PatientModel(full_name=name, phone=phone) for name, phone in _PATIENTS])
+        session.add_all(
+            [
+                PatientModel(full_name=name, birth_date=birth_date, phone=phone)
+                for name, birth_date, phone in _PATIENTS
+            ]
+        )
         session.add_all(
             [
                 DoctorModel(full_name=name, speciality=spec, medical_license_number=lic)

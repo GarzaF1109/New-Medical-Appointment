@@ -5,6 +5,7 @@ from __future__ import annotations
 from app.domain.entities.appointment import Appointment, AppointmentStatus
 from app.domain.entities.person import Doctor, Patient
 from app.domain.exceptions import InvalidInputException
+from app.domain.value_objects.birth_date import BirthDate
 from app.domain.value_objects.medical_license import MedicalLicense
 from app.domain.value_objects.phone_number import PhoneNumber
 from app.domain.value_objects.time_slot import TimeSlot
@@ -58,7 +59,21 @@ def patient_to_domain(model: PatientModel) -> Patient:
             phone = PhoneNumber.parse(model.phone)
         except InvalidInputException:
             phone = None
-    return Patient(id=model.id, full_name=model.full_name, phone=phone)
+    return Patient(
+        id=model.id,
+        full_name=model.full_name,
+        birth_date=BirthDate(model.birth_date),
+        phone=phone,
+    )
+
+
+def patient_to_model(entity: Patient, model: PatientModel | None = None) -> PatientModel:
+    """Vuelca una entidad Patient sobre una fila, creandola si hace falta."""
+    target = model or PatientModel()
+    target.full_name = entity.full_name
+    target.birth_date = entity.birth_date.value
+    target.phone = entity.phone.value if entity.phone else None
+    return target
 
 
 def doctor_to_domain(model: DoctorModel) -> Doctor:
@@ -75,3 +90,12 @@ def doctor_to_domain(model: DoctorModel) -> Doctor:
         speciality=model.speciality,
         license=license_,
     )
+
+
+def doctor_to_model(entity: Doctor, model: DoctorModel | None = None) -> DoctorModel:
+    """Vuelca una entidad Doctor sobre una fila, creandola si hace falta."""
+    target = model or DoctorModel()
+    target.full_name = entity.full_name
+    target.speciality = entity.speciality
+    target.medical_license_number = str(entity.license) if entity.license else None
+    return target
