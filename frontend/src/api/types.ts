@@ -43,6 +43,10 @@ export interface AppointmentPage {
 export interface Patient {
   id: number;
   fullName: string;
+  /** Fecha de nacimiento en formato ISO 8601 (YYYY-MM-DD). */
+  birthDate: string;
+  /** Edad cumplida, derivada por el backend. */
+  age: number;
   phone: string | null;
 }
 

@@ -7,8 +7,14 @@ import type { Doctor, Patient } from "@/api/types";
 import { AppointmentForm } from "@/features/appointments/components/AppointmentForm";
 
 const PATIENTS: Patient[] = [
-  { id: 1, fullName: "Ana Maria Lopez", phone: "+5218112345678" },
-  { id: 3, fullName: "Lucia Sin Telefono", phone: null },
+  {
+    id: 1,
+    fullName: "Ana Maria Lopez",
+    birthDate: "1988-03-14",
+    age: 38,
+    phone: "+5218112345678",
+  },
+  { id: 3, fullName: "Lucia Sin Telefono", birthDate: "2001-07-23", age: 25, phone: null },
 ];
 
 const DOCTORS: Doctor[] = [
