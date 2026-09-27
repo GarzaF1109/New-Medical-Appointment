@@ -55,20 +55,26 @@ def test_an_entity_writes_back_onto_its_row():
 
 
 def test_a_valid_phone_is_parsed_on_read():
-    patient = patient_to_domain(PatientModel(id=1, full_name="Ana", phone="8112345678"))
+    patient = patient_to_domain(
+        PatientModel(id=1, full_name="Ana", birth_date=date(1990, 5, 20), phone="8112345678")
+    )
 
     assert patient.phone.value == "5218112345678"
 
 
 def test_a_corrupt_phone_degrades_to_none():
     # Un dato heredado invalido no debe impedir leer al paciente.
-    patient = patient_to_domain(PatientModel(id=1, full_name="Ana", phone="123"))
+    patient = patient_to_domain(
+        PatientModel(id=1, full_name="Ana", birth_date=date(1990, 5, 20), phone="123")
+    )
 
     assert patient.phone is None
 
 
 def test_a_missing_phone_marks_the_patient_unreachable():
-    patient = patient_to_domain(PatientModel(id=1, full_name="Ana", phone=None))
+    patient = patient_to_domain(
+        PatientModel(id=1, full_name="Ana", birth_date=date(1990, 5, 20), phone=None)
+    )
 
     assert patient.is_reachable is False
 

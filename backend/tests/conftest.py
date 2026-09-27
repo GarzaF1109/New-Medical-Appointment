@@ -8,6 +8,7 @@ import pytest
 
 from app.domain.entities.appointment import Appointment
 from app.domain.entities.person import Doctor, Patient
+from app.domain.value_objects.birth_date import BirthDate
 from app.domain.value_objects.phone_number import PhoneNumber
 from app.domain.value_objects.time_slot import TimeSlot
 from tests.fakes import (
@@ -38,9 +39,24 @@ def notifier() -> SpyNotificationSender:
 def patients() -> InMemoryPatientRepository:
     return InMemoryPatientRepository(
         [
-            Patient(id=1, full_name="Ana Maria Lopez", phone=PhoneNumber.parse("8112345678")),
-            Patient(id=2, full_name="Carlos Ramirez", phone=PhoneNumber.parse("8187654321")),
-            Patient(id=3, full_name="Lucia Sin Telefono", phone=None),
+            Patient(
+                id=1,
+                full_name="Ana Maria Lopez",
+                birth_date=BirthDate(date(1988, 3, 14)),
+                phone=PhoneNumber.parse("8112345678"),
+            ),
+            Patient(
+                id=2,
+                full_name="Carlos Ramirez",
+                birth_date=BirthDate(date(1975, 11, 2)),
+                phone=PhoneNumber.parse("8187654321"),
+            ),
+            Patient(
+                id=3,
+                full_name="Lucia Sin Telefono",
+                birth_date=BirthDate(date(2001, 7, 23)),
+                phone=None,
+            ),
         ]
     )
 

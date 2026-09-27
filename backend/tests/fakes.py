@@ -7,6 +7,7 @@ datos.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date as Date
 from datetime import datetime
 from itertools import count
@@ -110,8 +111,11 @@ class InMemoryAppointmentRepository(AppointmentRepository):
 class InMemoryPatientRepository(PatientRepository):
     """Repositorio de pacientes respaldado por un diccionario."""
 
-    def __init__(self, patients: list[Patient]) -> None:
-        self._items = {p.id: p for p in patients}
+    def __init__(self, patients: list[Patient] | None = None) -> None:
+        self._items: dict[int, Patient] = {}
+        self._ids = count(1)
+        for patient in patients or []:
+            self.add(patient)
 
     def get(self, patient_id: int) -> Patient | None:
         return self._items.get(patient_id)
@@ -119,15 +123,42 @@ class InMemoryPatientRepository(PatientRepository):
     def list_all(self) -> list[Patient]:
         return sorted(self._items.values(), key=lambda p: p.full_name)
 
+    def add(self, patient: Patient) -> Patient:
+        stored = patient if patient.id is not None else replace(patient, id=next(self._ids))
+        self._items[stored.id] = stored
+        return stored
+
+    def update(self, patient: Patient) -> Patient:
+        self._items[patient.id] = patient
+        return patient
+
+    def delete(self, patient_id: int) -> None:
+        self._items.pop(patient_id, None)
+
 
 class InMemoryDoctorRepository(DoctorRepository):
     """Repositorio de doctores respaldado por un diccionario."""
 
-    def __init__(self, doctors: list[Doctor]) -> None:
-        self._items = {d.id: d for d in doctors}
+    def __init__(self, doctors: list[Doctor] | None = None) -> None:
+        self._items: dict[int, Doctor] = {}
+        self._ids = count(1)
+        for doctor in doctors or []:
+            self.add(doctor)
 
     def get(self, doctor_id: int) -> Doctor | None:
         return self._items.get(doctor_id)
 
     def list_all(self) -> list[Doctor]:
         return sorted(self._items.values(), key=lambda d: d.full_name)
+
+    def add(self, doctor: Doctor) -> Doctor:
+        stored = doctor if doctor.id is not None else replace(doctor, id=next(self._ids))
+        self._items[stored.id] = stored
+        return stored
+
+    def update(self, doctor: Doctor) -> Doctor:
+        self._items[doctor.id] = doctor
+        return doctor
+
+    def delete(self, doctor_id: int) -> None:
+        self._items.pop(doctor_id, None)

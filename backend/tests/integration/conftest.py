@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 from fastapi.testclient import TestClient
@@ -41,9 +41,24 @@ def seeded(session_factory):
     with session_factory() as session:
         session.add_all(
             [
-                PatientModel(id=1, full_name="Ana Maria Lopez", phone="8112345678"),
-                PatientModel(id=2, full_name="Carlos Ramirez", phone="8187654321"),
-                PatientModel(id=3, full_name="Lucia Sin Telefono", phone=None),
+                PatientModel(
+                    id=1,
+                    full_name="Ana Maria Lopez",
+                    birth_date=date(1988, 3, 14),
+                    phone="8112345678",
+                ),
+                PatientModel(
+                    id=2,
+                    full_name="Carlos Ramirez",
+                    birth_date=date(1975, 11, 2),
+                    phone="8187654321",
+                ),
+                PatientModel(
+                    id=3,
+                    full_name="Lucia Sin Telefono",
+                    birth_date=date(2001, 7, 23),
+                    phone=None,
+                ),
             ]
         )
         session.add_all(
