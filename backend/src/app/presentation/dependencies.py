@@ -17,6 +17,16 @@ from app.application.use_cases.change_appointment_status import (
     ChangeAppointmentStatusUseCase,
 )
 from app.application.use_cases.delete_appointment import DeleteAppointmentUseCase
+from app.application.use_cases.manage_doctors import (
+    CreateDoctorUseCase,
+    DeleteDoctorUseCase,
+    UpdateDoctorUseCase,
+)
+from app.application.use_cases.manage_patients import (
+    CreatePatientUseCase,
+    DeletePatientUseCase,
+    UpdatePatientUseCase,
+)
 from app.application.use_cases.query_appointments import QueryAppointmentsUseCase
 from app.application.use_cases.reschedule_appointment import RescheduleAppointmentUseCase
 from app.application.use_cases.schedule_appointment import ScheduleAppointmentUseCase
@@ -168,3 +178,49 @@ def get_delete_use_case(appointments: AppointmentRepositoryDep) -> DeleteAppoint
 
 
 DeleteUseCaseDep = Annotated[DeleteAppointmentUseCase, Depends(get_delete_use_case)]
+
+
+def get_create_patient_use_case(
+    patients: PatientRepositoryDep, clock: ClockDep
+) -> CreatePatientUseCase:
+    """Caso de uso de alta de pacientes, ya cableado."""
+    return CreatePatientUseCase(patients=patients, clock=clock)
+
+
+def get_update_patient_use_case(
+    patients: PatientRepositoryDep, clock: ClockDep
+) -> UpdatePatientUseCase:
+    """Caso de uso de edicion de pacientes, ya cableado."""
+    return UpdatePatientUseCase(patients=patients, clock=clock)
+
+
+def get_delete_patient_use_case(
+    patients: PatientRepositoryDep, appointments: AppointmentRepositoryDep
+) -> DeletePatientUseCase:
+    """Caso de uso de baja de pacientes, ya cableado."""
+    return DeletePatientUseCase(patients=patients, appointments=appointments)
+
+
+def get_create_doctor_use_case(doctors: DoctorRepositoryDep) -> CreateDoctorUseCase:
+    """Caso de uso de alta de doctores, ya cableado."""
+    return CreateDoctorUseCase(doctors=doctors)
+
+
+def get_update_doctor_use_case(doctors: DoctorRepositoryDep) -> UpdateDoctorUseCase:
+    """Caso de uso de edicion de doctores, ya cableado."""
+    return UpdateDoctorUseCase(doctors=doctors)
+
+
+def get_delete_doctor_use_case(
+    doctors: DoctorRepositoryDep, appointments: AppointmentRepositoryDep
+) -> DeleteDoctorUseCase:
+    """Caso de uso de baja de doctores, ya cableado."""
+    return DeleteDoctorUseCase(doctors=doctors, appointments=appointments)
+
+
+CreatePatientUseCaseDep = Annotated[CreatePatientUseCase, Depends(get_create_patient_use_case)]
+UpdatePatientUseCaseDep = Annotated[UpdatePatientUseCase, Depends(get_update_patient_use_case)]
+DeletePatientUseCaseDep = Annotated[DeletePatientUseCase, Depends(get_delete_patient_use_case)]
+CreateDoctorUseCaseDep = Annotated[CreateDoctorUseCase, Depends(get_create_doctor_use_case)]
+UpdateDoctorUseCaseDep = Annotated[UpdateDoctorUseCase, Depends(get_update_doctor_use_case)]
+DeleteDoctorUseCaseDep = Annotated[DeleteDoctorUseCase, Depends(get_delete_doctor_use_case)]
