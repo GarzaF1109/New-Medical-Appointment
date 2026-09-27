@@ -1,0 +1,1 @@
+"""Paquete `value_objects`."""
