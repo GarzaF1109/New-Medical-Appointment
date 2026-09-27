@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.db
+
+# Node
+node_modules/
+dist/
+*.local
+
+# Entorno: NUNCA versionar secretos
+.env
+.env.*
+!.env.example
+
+# Editores / SO
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
