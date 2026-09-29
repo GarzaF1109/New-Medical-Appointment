@@ -9,6 +9,7 @@ de verbos en la ruta.
 from __future__ import annotations
 
 from datetime import date as Date
+from typing import Any
 
 from fastapi import APIRouter, Query, Response, status
 
@@ -35,7 +36,9 @@ from app.presentation.dependencies import (
 
 router = APIRouter(prefix="/appointments", tags=["Citas"])
 
-_COMMON_ERRORS = {
+# FastAPI acepta int o str como clave de `responses`; anotarlo explicitamente
+# evita que el tipo se infiera como `dict[int, ...]`, mas estrecho de la cuenta.
+_COMMON_ERRORS: dict[int | str, dict[str, Any]] = {
     404: {"model": ErrorResponse, "description": "La cita no existe"},
     422: {"model": ErrorResponse, "description": "Datos de entrada invalidos"},
 }
@@ -58,7 +61,7 @@ def list_appointments(
     offset: int = Query(default=0, ge=0),
 ) -> AppointmentCollectionResponse:
     """Lista citas filtradas y paginadas."""
-    page = use_case.list(
+    page = use_case.search(
         ListAppointmentsQuery(
             doctor_id=doctor_id,
             patient_id=patient_id,
