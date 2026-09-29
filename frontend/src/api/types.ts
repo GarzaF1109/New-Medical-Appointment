@@ -67,6 +67,38 @@ export interface ScheduleAppointmentInput {
   reason: string;
 }
 
+export interface CreatePatientInput {
+  fullName: string;
+  /** Fecha de nacimiento en formato ISO 8601 (YYYY-MM-DD). */
+  birthDate: string;
+  phone?: string | null;
+}
+
+/**
+ * Edicion parcial de un paciente.
+ *
+ * Omitir un campo lo conserva; enviarlo como `null` lo borra. La distincion es
+ * significativa para el backend, asi que no se debe "rellenar" con undefined.
+ */
+export interface UpdatePatientInput {
+  fullName?: string;
+  birthDate?: string;
+  phone?: string | null;
+}
+
+export interface CreateDoctorInput {
+  fullName: string;
+  speciality: string;
+  medicalLicenseNumber?: string | null;
+}
+
+/** Edicion parcial de un doctor; mismas reglas que `UpdatePatientInput`. */
+export interface UpdateDoctorInput {
+  fullName?: string;
+  speciality?: string;
+  medicalLicenseNumber?: string | null;
+}
+
 export interface RescheduleAppointmentInput {
   date?: string;
   startTime?: string;

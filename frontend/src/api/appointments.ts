@@ -1,9 +1,8 @@
 import { http } from "./client";
+import { doctorsApi, patientsApi } from "./people";
 import type {
   Appointment,
   AppointmentPage,
-  Doctor,
-  Patient,
   RescheduleAppointmentInput,
   ScheduleAppointmentInput,
 } from "./types";
@@ -51,7 +50,13 @@ export const appointmentsApi = {
   remove: (id: number) => http.delete(`/appointments/${id}`),
 };
 
+/**
+ * Atajo de solo lectura para poblar los selectores del formulario de citas.
+ *
+ * Delega en los clientes de catalogo para que exista una sola definicion de
+ * cada ruta.
+ */
 export const catalogApi = {
-  patients: () => http.get<Patient[]>("/patients"),
-  doctors: () => http.get<Doctor[]>("/doctors"),
+  patients: patientsApi.list,
+  doctors: doctorsApi.list,
 };
