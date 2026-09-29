@@ -33,7 +33,6 @@ jobs:
 
       - name: Tipos (mypy)
         run: mypy src
-        continue-on-error: true
 
       - name: Pruebas con cobertura
         # El umbral de 80% esta declarado en pyproject.toml y hace fallar el job.
