@@ -10,6 +10,7 @@ from app.application.dto.appointment_dto import (
 )
 from app.application.services import notification_messages
 from app.domain.entities.appointment import Appointment
+from app.domain.entities.person import Doctor, Patient
 from app.domain.exceptions import ConflictException, NotFoundException
 from app.domain.ports.clock import Clock
 from app.domain.ports.notifications import NotificationSender
@@ -113,13 +114,13 @@ class ScheduleAppointmentUseCase:
         if any(appointment.conflicts_with(existing) for existing in agenda):
             raise ConflictException("El doctor ya tiene una cita en ese horario.")
 
-    def _notify(self, appointment: Appointment, patient, doctor) -> bool:
+    def _notify(self, appointment: Appointment, patient: Patient, doctor: Doctor) -> bool:
         """Intenta avisar al paciente sin comprometer la operacion principal.
 
         La cita ya quedo guardada; si el proveedor de mensajeria falla se
         registra el incidente y se informa al usuario, pero no se revierte.
         """
-        if not patient.is_reachable:
+        if patient.phone is None:
             logger.info(
                 "Paciente %s sin telefono registrado; se omite la notificacion.", patient.id
             )

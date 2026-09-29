@@ -196,7 +196,7 @@ class RescheduleAppointmentUseCase:
         if previous_patient_id != appointment.patient_id:
             self._notify_previous_patient(previous_patient_id, appointment)
 
-        if not patient.is_reachable:
+        if patient.phone is None:
             logger.info(
                 "Paciente %s sin telefono registrado; se omite la notificacion.", patient.id
             )
@@ -207,7 +207,7 @@ class RescheduleAppointmentUseCase:
 
     def _notify_previous_patient(self, patient_id: int, appointment: Appointment) -> None:
         previous = self._patients.get(patient_id)
-        if previous is None or not previous.is_reachable:
+        if previous is None or previous.phone is None:
             return
         self._notifier.send(
             previous.phone, notification_messages.appointment_cancelled(appointment)

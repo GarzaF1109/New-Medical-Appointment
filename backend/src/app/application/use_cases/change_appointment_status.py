@@ -7,6 +7,7 @@ import logging
 from app.application.dto.appointment_dto import AppointmentResult
 from app.application.services import notification_messages
 from app.domain.entities.appointment import Appointment
+from app.domain.entities.person import Patient
 from app.domain.exceptions import NotFoundException
 from app.domain.ports.notifications import NotificationSender
 from app.domain.ports.repositories import (
@@ -82,8 +83,8 @@ class ChangeAppointmentStatusUseCase:
             notification_sent=sent,
         )
 
-    def _notify(self, appointment: Appointment, patient) -> bool:
-        if patient is None or not patient.is_reachable:
+    def _notify(self, appointment: Appointment, patient: Patient | None) -> bool:
+        if patient is None or patient.phone is None:
             return False
         return self._notifier.send(
             patient.phone, notification_messages.appointment_cancelled(appointment)
