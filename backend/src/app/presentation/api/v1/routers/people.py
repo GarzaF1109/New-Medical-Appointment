@@ -137,7 +137,7 @@ def list_patient_appointments(
     offset: int = Query(default=0, ge=0),
 ) -> AppointmentCollectionResponse:
     """Devuelve el historial de citas del paciente."""
-    page = use_case.list(ListAppointmentsQuery(patient_id=patient_id, limit=limit, offset=offset))
+    page = use_case.search(ListAppointmentsQuery(patient_id=patient_id, limit=limit, offset=offset))
     return AppointmentCollectionResponse.from_page(page)
 
 
@@ -223,5 +223,5 @@ def list_doctor_appointments(
     offset: int = Query(default=0, ge=0),
 ) -> AppointmentCollectionResponse:
     """Devuelve la agenda del doctor."""
-    page = use_case.list(ListAppointmentsQuery(doctor_id=doctor_id, limit=limit, offset=offset))
+    page = use_case.search(ListAppointmentsQuery(doctor_id=doctor_id, limit=limit, offset=offset))
     return AppointmentCollectionResponse.from_page(page)

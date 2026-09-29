@@ -130,7 +130,7 @@ class DeletePatientUseCase:
         if self._patients.get(patient_id) is None:
             raise NotFoundException("Paciente", patient_id)
 
-        agenda, _ = self._appointments.list(patient_id=patient_id, limit=_AGENDA_PROBE_LIMIT)
+        agenda, _ = self._appointments.search(patient_id=patient_id, limit=_AGENDA_PROBE_LIMIT)
         if any(not appointment.status.is_final for appointment in agenda):
             raise ConflictException(
                 "El paciente tiene citas vigentes; cancelelas antes de eliminarlo."

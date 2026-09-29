@@ -39,7 +39,7 @@ class SqlAlchemyAppointmentRepository(AppointmentRepository):
         model = self._session.get(AppointmentModel, appointment_id)
         return appointment_to_domain(model) if model else None
 
-    def list(
+    def search(
         self,
         *,
         doctor_id: int | None = None,

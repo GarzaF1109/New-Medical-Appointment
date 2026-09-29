@@ -22,7 +22,7 @@ class AppointmentRepository(ABC):
         """Recupera una cita por su identificador, o None si no existe."""
 
     @abstractmethod
-    def list(
+    def search(
         self,
         *,
         doctor_id: int | None = None,

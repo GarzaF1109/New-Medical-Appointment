@@ -63,7 +63,7 @@ class InMemoryAppointmentRepository(AppointmentRepository):
     def get(self, appointment_id: int) -> Appointment | None:
         return self._items.get(appointment_id)
 
-    def list(
+    def search(
         self,
         *,
         doctor_id: int | None = None,

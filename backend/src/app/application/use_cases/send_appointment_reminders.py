@@ -66,7 +66,7 @@ class SendAppointmentRemindersUseCase:
             Un resumen con los conteos de la corrida.
         """
         tomorrow = (self._clock.now() + timedelta(days=1)).date()
-        pending, _ = self._appointments.list(
+        pending, _ = self._appointments.search(
             status=AppointmentStatus.PENDING,
             date_from=tomorrow,
             date_to=tomorrow,
@@ -77,7 +77,10 @@ class SendAppointmentRemindersUseCase:
         for appointment in pending:
             patient = self._patients.get(appointment.patient_id)
             doctor = self._doctors.get(appointment.doctor_id)
-            if patient is None or doctor is None or not patient.is_reachable:
+            # Se comprueba `phone` y no `patient.is_reachable` -el mismo
+            # predicado- porque asi el verificador de tipos sabe que abajo ya
+            # no puede ser None.
+            if patient is None or doctor is None or patient.phone is None:
                 skipped += 1
                 logger.info("Cita %s omitida: paciente sin telefono.", appointment.id)
                 continue

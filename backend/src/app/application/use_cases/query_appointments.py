@@ -41,13 +41,13 @@ class QueryAppointmentsUseCase:
             raise NotFoundException("Cita", appointment_id)
         return self._enrich([appointment])[0]
 
-    def list(self, query: ListAppointmentsQuery) -> PagedAppointments:
+    def search(self, query: ListAppointmentsQuery) -> PagedAppointments:
         """Lista citas segun los filtros indicados.
 
         Resuelve los nombres en lote para evitar el problema N+1 que provocaria
         consultar paciente y doctor dentro del bucle.
         """
-        appointments, total = self._appointments.list(
+        appointments, total = self._appointments.search(
             doctor_id=query.doctor_id,
             patient_id=query.patient_id,
             status=query.status,
