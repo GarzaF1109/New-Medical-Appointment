@@ -58,6 +58,15 @@ export function useRescheduleAppointment() {
   });
 }
 
+/** Elimina una cita de forma definitiva. */
+export function useDeleteAppointment() {
+  const invalidate = useInvalidateAppointments();
+  return useMutation({
+    mutationFn: (id: number) => appointmentsApi.remove(id),
+    onSuccess: invalidate,
+  });
+}
+
 /** Aplica una transicion de estado sobre una cita. */
 export function useAppointmentTransition() {
   const invalidate = useInvalidateAppointments();
