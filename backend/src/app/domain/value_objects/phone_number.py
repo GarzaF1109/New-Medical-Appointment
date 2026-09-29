@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 
 from app.domain.exceptions import InvalidInputException
+from app.domain.text_rules import validate_phone_charset
 
 _DIGITS = re.compile(r"\D")
 _MEXICO_COUNTRY_CODE = "52"
@@ -48,10 +49,14 @@ class PhoneNumber:
         Raises:
             InvalidInputException: Si el numero esta vacio o no es valido.
         """
-        if raw is None or not raw.strip():
-            raise InvalidInputException("El telefono es obligatorio.")
+        # Primero se comprueba el juego de caracteres: si se quitaran los
+        # separadores antes, "8112345678abc" perderia las letras en silencio y
+        # se guardaria como si fuera un numero valido.
+        cleaned = validate_phone_charset(raw)
+        digits = _DIGITS.sub("", cleaned)
 
-        digits = _DIGITS.sub("", raw)
+        if not digits:
+            raise InvalidInputException("El telefono debe contener digitos.")
 
         if len(digits) == 10:
             digits = default_country_code + digits
