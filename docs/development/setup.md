@@ -16,7 +16,10 @@ docker compose up --build
 
 - Frontend: <http://localhost:8080>
 - API: <http://localhost:8000>
-- Swagger: <http://localhost:8000/docs>
+- Swagger: <http://localhost:8080/docs> (nginx lo sirve bajo el mismo origen)
+
+La base arranca vacia: cree un paciente y un doctor desde la interfaz antes de
+agendar la primera cita.
 
 ## Opcion B — Local, dos terminales
 
@@ -55,14 +58,15 @@ VITE_API_TARGET=http://localhost:8899 npm run dev
 ```bash
 # Backend
 cd backend
-pytest                        # 113 pruebas
+pytest                        # 190 pruebas
 pytest --cov                  # cobertura; falla por debajo del 80%
 pytest -m unit                # solo unitarias
 ruff check src tests          # linter
+mypy src                      # verificacion de tipos
 
 # Frontend
 cd frontend
-npm test                      # 14 pruebas
+npm test                      # 20 pruebas
 npx tsc -b --noEmit           # verificacion de tipos
 npm run build                 # compilacion de produccion
 ```
