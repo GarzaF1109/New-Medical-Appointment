@@ -99,26 +99,55 @@ describe("PatientForm", () => {
     expect(init.method).toBe("PATCH");
   });
 
-  it("muestra el error de validacion que solo el backend puede detectar", async () => {
-    // El navegador no sabe normalizar un telefono mexicano; el backend si.
-    vi.stubGlobal(
-      "fetch",
-      mockFetch(422, {
-        status: 422,
-        code: "INVALID_INPUT",
-        message: "El telefono debe tener entre 10 y 15 digitos.",
-      }),
-    );
+  it("rechaza letras en el telefono sin gastar una peticion", async () => {
+    const fetchMock = mockFetch(201, { id: 9 });
+    vi.stubGlobal("fetch", fetchMock);
     renderForm(null);
     const user = userEvent.setup();
 
-    await user.type(screen.getByLabelText(/nombre completo/i), "Sofia Herrera");
-    await user.type(screen.getByLabelText(/fecha de nacimiento/i), "1992-06-18");
-    await user.type(screen.getByLabelText(/telefono/i), "123");
-    await user.click(screen.getByRole("button", { name: /registrar paciente/i }));
+    await user.type(screen.getByLabelText(/telefono/i), "8112345678abc");
+    await user.tab();
+
+    expect(await screen.findByText("El telefono no puede contener letras.")).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un telefono con mas digitos de los permitidos", async () => {
+    renderForm(null);
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/telefono/i), "81123456789012345");
+    await user.tab();
+
+    expect(await screen.findByText(/no puede exceder 15 digitos/)).toBeInTheDocument();
+  });
+
+  it("rechaza numeros en el nombre", async () => {
+    renderForm(null);
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/nombre completo/i), "Ana123");
+    await user.tab();
+
+    expect(await screen.findByText("El nombre no puede contener numeros.")).toBeInTheDocument();
+  });
+
+  it("muestra el error que solo el backend puede detectar", async () => {
+    vi.stubGlobal(
+      "fetch",
+      mockFetch(409, {
+        status: 409,
+        code: "CONFLICT",
+        message: "El paciente tiene citas vigentes; cancelelas antes de eliminarlo.",
+      }),
+    );
+    renderForm(EXISTING);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /guardar cambios/i }));
 
     expect(
-      await screen.findByText("El telefono debe tener entre 10 y 15 digitos."),
+      await screen.findByText(/El paciente tiene citas vigentes/),
     ).toBeInTheDocument();
   });
 

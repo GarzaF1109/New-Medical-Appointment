@@ -80,8 +80,21 @@ describe("AppointmentForm", () => {
     const user = userEvent.setup();
 
     await user.type(screen.getByLabelText(/motivo/i), "gripa");
+    await user.tab(); // el aviso aparece al salir del campo, no mientras se teclea
 
-    expect(screen.getByText(/Faltan 5 caracteres/)).toBeInTheDocument();
+    expect(await screen.findByText(/Faltan 5 caracteres/)).toBeInTheDocument();
+  });
+
+  it("no envia nada mientras el formulario tenga campos invalidos", async () => {
+    const fetchMock = mockFetch(201, {});
+    vi.stubGlobal("fetch", fetchMock);
+    renderForm();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/motivo/i), "corto");
+    await user.click(screen.getByRole("button", { name: /agendar cita/i }));
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("envia la hora con segundos, como espera la API", async () => {
