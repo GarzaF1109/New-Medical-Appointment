@@ -85,8 +85,14 @@ class AppointmentResponse(BaseModel):
 
     @classmethod
     def from_result(cls, result: AppointmentResult) -> AppointmentResponse:
-        """Proyecta el resultado de un caso de uso a la respuesta HTTP."""
+        """Proyecta el resultado de un caso de uso a la respuesta HTTP.
+
+        Raises:
+            ValueError: Si la cita aun no se ha persistido y no tiene ID.
+        """
         appointment = result.appointment
+        if appointment.id is None:
+            raise ValueError("No se puede exponer una cita sin identificador.")
         base = f"/api/v1/appointments/{appointment.id}"
         return cls(
             id=appointment.id,

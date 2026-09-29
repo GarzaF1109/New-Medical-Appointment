@@ -87,11 +87,17 @@ def get_notification_sender(settings: SettingsDep) -> NotificationSender:
     Sin credenciales de Twilio se usa el adaptador de bitacora, de modo que el
     entorno local funciona completo y sin secretos.
     """
-    if settings.notifications_enabled:
+    # Se comprueban los tres campos y no `settings.notifications_enabled` -el
+    # mismo predicado- porque asi el verificador de tipos sabe que dentro del
+    # `if` ninguno puede ser None.
+    account_sid = settings.twilio_account_sid
+    auth_token = settings.twilio_auth_token
+    sender = settings.twilio_whatsapp_from
+    if account_sid and auth_token and sender:
         return TwilioWhatsAppSender(
-            account_sid=settings.twilio_account_sid,
-            auth_token=settings.twilio_auth_token,
-            sender=settings.twilio_whatsapp_from,
+            account_sid=account_sid,
+            auth_token=auth_token,
+            sender=sender,
         )
     return LoggingNotificationSender()
 
