@@ -40,7 +40,7 @@ cableado ocurre en un unico composition root (`presentation/dependencies.py`).
 - La regla de solapamiento vive una sola vez, en `TimeSlot.overlaps()`.
 - Cambiar Twilio por otro proveedor toca un archivo de infraestructura y ninguno
   de dominio o aplicacion.
-- Se alcanzo 93% de cobertura global con la mayoria de pruebas siendo unitarias.
+- Se alcanzo 94% de cobertura global con la mayoria de pruebas siendo unitarias.
 
 **Negativas**
 

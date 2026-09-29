@@ -19,3 +19,4 @@
 | [003](architecture/decisions/ADR-003-esquema-y-migraciones.md) | `end_time` derivado; Alembic para el esquema |
 | [004](architecture/decisions/ADR-004-notificaciones-no-bloqueantes.md) | Una notificacion fallida no revierte la operacion |
 | [005](architecture/decisions/ADR-005-api-rest-sin-verbos.md) | Transiciones de estado como subrecursos |
+| [006](architecture/decisions/ADR-006-validacion-en-el-dominio.md) | La validacion vive en el dominio y se refleja en los bordes |
