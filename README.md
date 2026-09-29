@@ -14,7 +14,12 @@ docker compose up --build
 |---|---|
 | Interfaz web | <http://localhost:8080> |
 | API | <http://localhost:8000> |
-| Swagger | <http://localhost:8000/docs> |
+| Swagger | <http://localhost:8080/docs> (o <http://localhost:8000/docs>) |
+
+La interfaz tiene tres secciones -**Citas**, **Pacientes** y **Doctores**- desde
+las que se puede ejercer toda la API: CRUD de ambos catalogos, agendado,
+reagendado, confirmacion, cancelacion y borrado de citas, y la agenda de cada
+paciente y de cada doctor.
 
 Para desarrollo local sin Docker, ver [`docs/development/setup.md`](docs/development/setup.md).
 
@@ -34,9 +39,9 @@ newmedicalappointmentapp/
 ├── frontend/
 │   └── src/
 │       ├── api/              # Cliente HTTP tipado y errores
-│       ├── features/         # Modulo de citas: componentes y hooks
+│       ├── features/         # Modulos de citas y de catalogos (pacientes/doctores)
 │       ├── components/       # Componentes compartidos
-│       └── pages/
+│       └── pages/            # Citas · Pacientes · Doctores
 ├── docs/                     # C4, ADRs, contrato de API, guias
 ├── ops/                      # Configuracion de OTel y Prometheus
 └── docker-compose.yml
@@ -64,7 +69,7 @@ Detalle en [`docs/architecture/components.md`](docs/architecture/components.md).
 |---|---|
 | Pruebas backend | 190 en verde |
 | Cobertura backend | 94% (umbral exigido: 80%) |
-| Pruebas frontend | 14 en verde |
+| Pruebas frontend | 20 en verde |
 | Linter | `ruff check` sin hallazgos |
 | Tipos | `tsc --noEmit` sin errores |
 
