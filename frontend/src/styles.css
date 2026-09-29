@@ -113,3 +113,45 @@ tbody tr:hover { background: #f8fafc; }
 .alert__close { background: none; border: none; font-size: 20px; cursor: pointer; color: inherit; line-height: 1; }
 
 .empty { color: var(--muted); text-align: center; padding: 28px 0; margin: 0; }
+
+/* Navegacion entre secciones */
+.nav { background: var(--surface); border-bottom: 1px solid var(--border); }
+.nav__inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.nav__brand { font-weight: 700; letter-spacing: -.01em; }
+.nav__tabs { display: flex; gap: 4px; margin-right: auto; }
+.nav__tab {
+  padding: 16px 14px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.nav__tab:hover { color: var(--text); }
+.nav__tab--active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.nav__link { color: var(--muted); font-size: 13px; text-decoration: none; }
+.nav__link:hover { color: var(--primary); }
+
+/* Cabecera de tarjeta con accion al extremo */
+.card__header { display: flex; align-items: center; justify-content: space-between; }
+.card__header h2 { margin: 0 0 16px; }
+
+.form-actions { display: flex; gap: 8px; align-items: center; }
+.form-actions .btn { margin-top: 14px; }
+
+.hint { color: var(--muted); font-size: 12px; }
+.muted { color: var(--muted); }
+
+/* Fila expandible de reagendado dentro de la tabla */
+.row--editing > td { background: #f8fafc; }
+.inline-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.inline-form__actions { display: flex; gap: 6px; }
+.inline-form__actions .btn { margin-top: 0; }
