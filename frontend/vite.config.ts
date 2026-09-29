@@ -18,6 +18,15 @@ export default defineConfig({
         target: process.env.VITE_API_TARGET ?? "http://localhost:8000",
         changeOrigin: true,
       },
+      // Swagger bajo el mismo origen, igual que en produccion.
+      "/docs": {
+        target: process.env.VITE_API_TARGET ?? "http://localhost:8000",
+        changeOrigin: true,
+      },
+      "/openapi.json": {
+        target: process.env.VITE_API_TARGET ?? "http://localhost:8000",
+        changeOrigin: true,
+      },
     },
   },
   test: {
