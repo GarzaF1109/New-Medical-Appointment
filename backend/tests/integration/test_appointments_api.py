@@ -211,3 +211,21 @@ def test_the_openapi_document_is_generated(client):
     schema = client.get("/openapi.json").json()
 
     assert "/api/v1/appointments" in schema["paths"]
+
+
+def test_a_reason_of_only_symbols_is_rejected(client):
+    response = client.post("/api/v1/appointments", json={**VALID_PAYLOAD, "reason": "!!!!!!!!!!!!"})
+
+    assert response.status_code == 422
+
+
+def test_a_reason_of_only_digits_is_rejected(client):
+    response = client.post("/api/v1/appointments", json={**VALID_PAYLOAD, "reason": "1234567890"})
+
+    assert response.status_code == 422
+
+
+def test_a_date_beyond_the_scheduling_horizon_is_rejected(client):
+    response = client.post("/api/v1/appointments", json={**VALID_PAYLOAD, "date": "2099-01-01"})
+
+    assert response.status_code == 422

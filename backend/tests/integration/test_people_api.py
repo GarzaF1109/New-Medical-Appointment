@@ -235,3 +235,57 @@ def test_the_deleted_doctor_disappears_from_the_listing(client):
 
     names = [doctor["fullName"] for doctor in client.get("/api/v1/doctors").json()]
     assert "Roberto Diaz" not in names
+
+
+# --- Validaciones de entrada ------------------------------------------------
+
+
+def test_letters_in_the_phone_are_rejected(client):
+    # Regresion: "8112345678abc" perdia las letras en silencio y devolvia 201.
+    response = client.post("/api/v1/patients", json={**NEW_PATIENT, "phone": "8112345678abc"})
+
+    assert response.status_code == 422
+
+
+def test_a_name_with_digits_is_rejected(client):
+    response = client.post("/api/v1/patients", json={**NEW_PATIENT, "fullName": "Ana123"})
+
+    assert response.status_code == 422
+
+
+def test_a_name_of_only_symbols_is_rejected(client):
+    response = client.post("/api/v1/patients", json={**NEW_PATIENT, "fullName": "!!!@@@###"})
+
+    assert response.status_code == 422
+
+
+def test_an_html_tag_is_rejected_as_a_name(client):
+    response = client.post(
+        "/api/v1/patients", json={**NEW_PATIENT, "fullName": "<script>alert</script>"}
+    )
+
+    assert response.status_code == 422
+
+
+def test_a_phone_with_too_many_digits_is_rejected(client):
+    response = client.post("/api/v1/patients", json={**NEW_PATIENT, "phone": "81123456789012345"})
+
+    assert response.status_code == 422
+
+
+def test_human_separators_in_the_phone_are_accepted(client):
+    response = client.post("/api/v1/patients", json={**NEW_PATIENT, "phone": "(81) 1234-5678"})
+
+    assert response.status_code == 201
+
+
+def test_a_speciality_of_only_digits_is_rejected(client):
+    response = client.post("/api/v1/doctors", json={**NEW_DOCTOR, "speciality": "99999"})
+
+    assert response.status_code == 422
+
+
+def test_a_doctor_name_with_digits_is_rejected(client):
+    response = client.post("/api/v1/doctors", json={**NEW_DOCTOR, "fullName": "666666"})
+
+    assert response.status_code == 422
