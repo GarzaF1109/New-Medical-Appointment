@@ -126,7 +126,9 @@ def register_exception_handlers(app: FastAPI) -> None:
         details = [
             {
                 "field": ".".join(str(part) for part in error["loc"][1:]) or "body",
-                "message": error["msg"],
+                # Pydantic antepone "Value error, " a los mensajes de los
+                # validadores propios; al usuario no le dice nada.
+                "message": error["msg"].removeprefix("Value error, "),
             }
             for error in exc.errors()
         ]
