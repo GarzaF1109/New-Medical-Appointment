@@ -3,10 +3,17 @@ import { useState } from "react";
 import { ApiError } from "@/api/ApiError";
 import type { Doctor, Patient } from "@/api/types";
 import { Alert } from "@/components/Alert";
+import { Field, RequiredLegend } from "@/components/Field";
 import { useScheduleAppointment } from "@/features/appointments/hooks/useAppointments";
 import { todayIso } from "@/lib/format";
-
-const MIN_REASON_LENGTH = 10;
+import {
+  REASON_MAX,
+  isClean,
+  maxAppointmentDateIso,
+  validateAppointmentDate,
+  validateReason,
+  validateRequired,
+} from "@/lib/validation";
 
 interface AppointmentFormProps {
   patients: Patient[];
@@ -22,6 +29,7 @@ const EMPTY_FORM = {
   durationMinutes: "60",
   reason: "",
 };
+type FormField = keyof typeof EMPTY_FORM;
 
 /**
  * Formulario de agendado.
@@ -32,15 +40,37 @@ const EMPTY_FORM = {
  */
 export function AppointmentForm({ patients, doctors, onScheduled }: AppointmentFormProps) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const schedule = useScheduleAppointment();
   const error = schedule.error instanceof ApiError ? schedule.error : null;
 
-  function update(field: keyof typeof EMPTY_FORM, value: string) {
+  const errors = {
+    patientId: validateRequired(form.patientId, "El paciente"),
+    doctorId: validateRequired(form.doctorId, "El doctor"),
+    date: validateAppointmentDate(form.date),
+    startTime: validateRequired(form.startTime, "La hora de inicio"),
+    reason: validateReason(form.reason),
+  };
+  const valid = isClean(errors);
+
+  function setField(field: FormField, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function markTouched(field: FormField) {
+    setTouched((current) => ({ ...current, [field]: true }));
   }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setTouched({
+      patientId: true,
+      doctorId: true,
+      date: true,
+      startTime: true,
+      reason: true,
+    });
+    if (!valid) return;
 
     let result;
     try {
@@ -59,6 +89,7 @@ export function AppointmentForm({ patients, doctors, onScheduled }: AppointmentF
     }
 
     setForm(EMPTY_FORM);
+    setTouched({});
     onScheduled(
       result.notificationSent
         ? `Cita registrada. Se notifico a ${result.patientName} por WhatsApp.`
@@ -66,12 +97,10 @@ export function AppointmentForm({ patients, doctors, onScheduled }: AppointmentF
     );
   }
 
-  const reasonTooShort =
-    form.reason.trim().length > 0 && form.reason.trim().length < MIN_REASON_LENGTH;
-
   return (
-    <form className="card" onSubmit={handleSubmit}>
+    <form className="card" onSubmit={handleSubmit} noValidate>
       <h2>Agendar cita</h2>
+      <RequiredLegend />
 
       {error && (
         <Alert variant={error.isConflict ? "warning" : "error"} title={error.code}>
@@ -80,12 +109,12 @@ export function AppointmentForm({ patients, doctors, onScheduled }: AppointmentF
       )}
 
       <div className="grid">
-        <label>
-          Paciente
+        <Field label="Paciente" required error={errors.patientId} touched={touched.patientId}>
           <select
-            required
+            aria-required="true"
             value={form.patientId}
-            onChange={(e) => update("patientId", e.target.value)}
+            onChange={(e) => setField("patientId", e.target.value)}
+            onBlur={() => markTouched("patientId")}
           >
             <option value="">Seleccione un paciente</option>
             {patients.map((patient) => (
@@ -95,14 +124,14 @@ export function AppointmentForm({ patients, doctors, onScheduled }: AppointmentF
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label>
-          Doctor
+        <Field label="Doctor" required error={errors.doctorId} touched={touched.doctorId}>
           <select
-            required
+            aria-required="true"
             value={form.doctorId}
-            onChange={(e) => update("doctorId", e.target.value)}
+            onChange={(e) => setField("doctorId", e.target.value)}
+            onBlur={() => markTouched("doctorId")}
           >
             <option value="">Seleccione un doctor</option>
             {doctors.map((doctor) => (
@@ -111,60 +140,66 @@ export function AppointmentForm({ patients, doctors, onScheduled }: AppointmentF
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label>
-          Fecha
+        <Field label="Fecha" required error={errors.date} touched={touched.date}>
           <input
             type="date"
-            required
+            aria-required="true"
             min={todayIso()}
+            max={maxAppointmentDateIso()}
             value={form.date}
-            onChange={(e) => update("date", e.target.value)}
+            onChange={(e) => setField("date", e.target.value)}
+            onBlur={() => markTouched("date")}
           />
-        </label>
+        </Field>
 
-        <label>
-          Hora de inicio
+        <Field
+          label="Hora de inicio"
+          required
+          error={errors.startTime}
+          touched={touched.startTime}
+        >
           <input
             type="time"
-            required
+            aria-required="true"
             value={form.startTime}
-            onChange={(e) => update("startTime", e.target.value)}
+            onChange={(e) => setField("startTime", e.target.value)}
+            onBlur={() => markTouched("startTime")}
           />
-        </label>
+        </Field>
 
-        <label>
-          Duracion
+        <Field label="Duracion" required>
           <select
             value={form.durationMinutes}
-            onChange={(e) => update("durationMinutes", e.target.value)}
+            onChange={(e) => setField("durationMinutes", e.target.value)}
           >
             <option value="30">30 minutos</option>
             <option value="60">1 hora</option>
             <option value="90">1 hora 30 minutos</option>
           </select>
-        </label>
+        </Field>
       </div>
 
-      <label>
-        Motivo de la consulta
+      <Field
+        label="Motivo de la consulta"
+        required
+        error={errors.reason}
+        touched={touched.reason}
+        hint={`${form.reason.trim().length} / ${REASON_MAX} caracteres`}
+      >
         <textarea
-          required
+          aria-required="true"
           rows={3}
-          minLength={MIN_REASON_LENGTH}
+          maxLength={REASON_MAX}
           placeholder="Describa el motivo con al menos 10 caracteres"
           value={form.reason}
-          onChange={(e) => update("reason", e.target.value)}
+          onChange={(e) => setField("reason", e.target.value)}
+          onBlur={() => markTouched("reason")}
         />
-        {reasonTooShort && (
-          <small className="field-error">
-            Faltan {MIN_REASON_LENGTH - form.reason.trim().length} caracteres.
-          </small>
-        )}
-      </label>
+      </Field>
 
-      <button type="submit" className="btn btn--primary" disabled={schedule.isPending}>
+      <button type="submit" className="btn btn--primary" disabled={schedule.isPending || !valid}>
         {schedule.isPending ? "Agendando…" : "Agendar cita"}
       </button>
     </form>

@@ -3,7 +3,16 @@ import { useEffect, useState } from "react";
 import { ApiError } from "@/api/ApiError";
 import type { Doctor } from "@/api/types";
 import { Alert } from "@/components/Alert";
+import { Field, RequiredLegend } from "@/components/Field";
 import { useCreateDoctor, useUpdateDoctor } from "@/features/people/hooks/usePeople";
+import {
+  NAME_MAX,
+  SPECIALITY_MAX,
+  isClean,
+  validateLicense,
+  validateName,
+  validateSpeciality,
+} from "@/lib/validation";
 
 interface DoctorFormProps {
   /** Doctor a editar. Si es null, el formulario da de alta uno nuevo. */
@@ -13,16 +22,25 @@ interface DoctorFormProps {
 }
 
 const EMPTY_FORM = { fullName: "", speciality: "", medicalLicenseNumber: "" };
+type FormField = keyof typeof EMPTY_FORM;
 
 /** Formulario de alta y edicion de doctores. */
 export function DoctorForm({ editing, onDone, onCancelEdit }: DoctorFormProps) {
   const [form, setForm] = useState(EMPTY_FORM);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const create = useCreateDoctor();
   const updateDoctor = useUpdateDoctor();
 
   const pending = create.isPending || updateDoctor.isPending;
   const failure = create.error ?? updateDoctor.error;
   const error = failure instanceof ApiError ? failure : null;
+
+  const errors = {
+    fullName: validateName(form.fullName),
+    speciality: validateSpeciality(form.speciality),
+    medicalLicenseNumber: validateLicense(form.medicalLicenseNumber),
+  };
+  const valid = isClean(errors);
 
   useEffect(() => {
     setForm(
@@ -34,14 +52,22 @@ export function DoctorForm({ editing, onDone, onCancelEdit }: DoctorFormProps) {
           }
         : EMPTY_FORM,
     );
+    setTouched({});
   }, [editing]);
 
-  function setField(field: keyof typeof EMPTY_FORM, value: string) {
+  function setField(field: FormField, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  function markTouched(field: FormField) {
+    setTouched((current) => ({ ...current, [field]: true }));
   }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setTouched({ fullName: true, speciality: true, medicalLicenseNumber: true });
+    if (!valid) return;
+
     const license = form.medicalLicenseNumber.trim();
 
     try {
@@ -51,7 +77,6 @@ export function DoctorForm({ editing, onDone, onCancelEdit }: DoctorFormProps) {
           input: {
             fullName: form.fullName.trim(),
             speciality: form.speciality.trim(),
-            // Vacio significa "quitale la cedula", no "dejala como estaba".
             medicalLicenseNumber: license === "" ? null : license,
           },
         });
@@ -69,12 +94,14 @@ export function DoctorForm({ editing, onDone, onCancelEdit }: DoctorFormProps) {
     }
 
     setForm(EMPTY_FORM);
+    setTouched({});
     onCancelEdit();
   }
 
   return (
-    <form className="card" onSubmit={handleSubmit}>
+    <form className="card" onSubmit={handleSubmit} noValidate>
       <h2>{editing ? `Editar doctor #${editing.id}` : "Registrar doctor"}</h2>
+      <RequiredLegend />
 
       {error && (
         <Alert variant={error.isConflict ? "warning" : "error"} title={error.code}>
@@ -83,47 +110,51 @@ export function DoctorForm({ editing, onDone, onCancelEdit }: DoctorFormProps) {
       )}
 
       <div className="grid">
-        <label>
-          Nombre completo
+        <Field label="Nombre completo" required error={errors.fullName} touched={touched.fullName}>
           <input
-            required
-            minLength={3}
-            maxLength={255}
+            aria-required="true"
+            maxLength={NAME_MAX}
             placeholder="Elena Navarro"
             value={form.fullName}
             onChange={(e) => setField("fullName", e.target.value)}
+            onBlur={() => markTouched("fullName")}
           />
-        </label>
+        </Field>
 
-        <label>
-          Especialidad
+        <Field
+          label="Especialidad"
+          required
+          error={errors.speciality}
+          touched={touched.speciality}
+        >
           <input
-            required
-            maxLength={120}
+            aria-required="true"
+            maxLength={SPECIALITY_MAX}
             placeholder="Cardiologia"
             value={form.speciality}
             onChange={(e) => setField("speciality", e.target.value)}
+            onBlur={() => markTouched("speciality")}
           />
-        </label>
+        </Field>
 
-        <label>
-          Cedula profesional
+        <Field
+          label="Cedula profesional"
+          error={errors.medicalLicenseNumber}
+          touched={touched.medicalLicenseNumber}
+          hint={editing ? "Dejela vacia para borrarla." : "Opcional. Formato L-YYYYMMDD-####A."}
+        >
           <input
             maxLength={20}
-            placeholder="L-20260526-8845A (opcional)"
+            placeholder="L-20260526-8845A"
             value={form.medicalLicenseNumber}
             onChange={(e) => setField("medicalLicenseNumber", e.target.value)}
+            onBlur={() => markTouched("medicalLicenseNumber")}
           />
-          <small className="hint">
-            {editing
-              ? "Dejela vacia para borrar la cedula registrada."
-              : "Formato L-YYYYMMDD-####A."}
-          </small>
-        </label>
+        </Field>
       </div>
 
       <div className="form-actions">
-        <button type="submit" className="btn btn--primary" disabled={pending}>
+        <button type="submit" className="btn btn--primary" disabled={pending || !valid}>
           {pending ? "Guardando…" : editing ? "Guardar cambios" : "Registrar doctor"}
         </button>
         {editing && (
