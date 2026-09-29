@@ -9,6 +9,9 @@ from datetime import datetime, time, timedelta
 from app.domain.exceptions import InvalidInputException
 
 DEFAULT_DURATION_MINUTES = 60
+# Horizonte de agenda: mas alla de dos anos una cita es un error de captura,
+# no una planeacion. Acota el dano de un dedazo en el ano.
+MAX_MONTHS_AHEAD = 24
 MIN_DURATION_MINUTES = 15
 MAX_DURATION_MINUTES = 480
 
@@ -74,6 +77,12 @@ class TimeSlot:
             self._start_datetime() < other._end_datetime()
             and other._start_datetime() < self._end_datetime()
         )
+
+    def is_too_far_ahead(self, now: datetime) -> bool:
+        """Indica si la franja cae mas alla del horizonte de agenda."""
+        target = self.date.year * 12 + self.date.month
+        reference = now.year * 12 + now.month
+        return target - reference > MAX_MONTHS_AHEAD
 
     def is_in_the_past(self, now: datetime) -> bool:
         """Indica si la franja ya comenzo respecto al instante dado.

@@ -5,13 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date as Date
 
-from app.domain.exceptions import InvalidInputException
+from app.domain.text_rules import validate_free_text, validate_person_name
 from app.domain.value_objects.birth_date import BirthDate
 from app.domain.value_objects.medical_license import MedicalLicense
 from app.domain.value_objects.phone_number import PhoneNumber
 
 MIN_NAME_LENGTH = 3
 MAX_NAME_LENGTH = 255
+MIN_SPECIALITY_LENGTH = 3
 MAX_SPECIALITY_LENGTH = 120
 
 
@@ -19,14 +20,12 @@ def _validate_full_name(full_name: str) -> str:
     """Normaliza y valida un nombre completo.
 
     Raises:
-        InvalidInputException: Si el nombre no cumple la longitud requerida.
+        InvalidInputException: Si esta vacio, fuera de rango, o trae numeros o
+            simbolos que no aparecen en un nombre de persona.
     """
-    cleaned = (full_name or "").strip()
-    if len(cleaned) < MIN_NAME_LENGTH:
-        raise InvalidInputException(f"El nombre debe tener al menos {MIN_NAME_LENGTH} caracteres.")
-    if len(cleaned) > MAX_NAME_LENGTH:
-        raise InvalidInputException(f"El nombre no puede exceder {MAX_NAME_LENGTH} caracteres.")
-    return cleaned
+    return validate_person_name(
+        full_name, field="El nombre", min_len=MIN_NAME_LENGTH, max_len=MAX_NAME_LENGTH
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,14 +109,12 @@ class Doctor:
 
     @staticmethod
     def _validate_speciality(speciality: str) -> str:
-        cleaned = (speciality or "").strip()
-        if not cleaned:
-            raise InvalidInputException("La especialidad es obligatoria.")
-        if len(cleaned) > MAX_SPECIALITY_LENGTH:
-            raise InvalidInputException(
-                f"La especialidad no puede exceder {MAX_SPECIALITY_LENGTH} caracteres."
-            )
-        return cleaned
+        return validate_free_text(
+            speciality,
+            field="La especialidad",
+            min_len=MIN_SPECIALITY_LENGTH,
+            max_len=MAX_SPECIALITY_LENGTH,
+        )
 
     @property
     def display_name(self) -> str:

@@ -6,6 +6,7 @@ from datetime import datetime
 from enum import IntEnum
 
 from app.domain.exceptions import ConflictException, InvalidInputException
+from app.domain.text_rules import validate_free_text
 from app.domain.value_objects.time_slot import TimeSlot
 
 MIN_REASON_LENGTH = 10
@@ -80,16 +81,12 @@ class Appointment:
 
     @staticmethod
     def _validate_reason(reason: str) -> str:
-        cleaned = (reason or "").strip()
-        if len(cleaned) < MIN_REASON_LENGTH:
-            raise InvalidInputException(
-                f"El motivo de la consulta debe tener al menos {MIN_REASON_LENGTH} caracteres."
-            )
-        if len(cleaned) > MAX_REASON_LENGTH:
-            raise InvalidInputException(
-                f"El motivo de la consulta no puede exceder {MAX_REASON_LENGTH} caracteres."
-            )
-        return cleaned
+        return validate_free_text(
+            reason,
+            field="El motivo de la consulta",
+            min_len=MIN_REASON_LENGTH,
+            max_len=MAX_REASON_LENGTH,
+        )
 
     @classmethod
     def schedule(
@@ -118,6 +115,10 @@ class Appointment:
         """
         if slot.is_in_the_past(now):
             raise InvalidInputException("No se puede agendar una cita en el pasado.")
+        if slot.is_too_far_ahead(now):
+            raise InvalidInputException(
+                "No se puede agendar una cita con mas de dos anos de anticipacion."
+            )
         return cls(patient_id=patient_id, doctor_id=doctor_id, slot=slot, reason=reason)
 
     def conflicts_with(self, other: Appointment) -> bool:
@@ -154,6 +155,10 @@ class Appointment:
             raise ConflictException(f"No se puede reagendar una cita {self.status.label.lower()}.")
         if new_slot.is_in_the_past(now):
             raise InvalidInputException("No se puede reagendar una cita al pasado.")
+        if new_slot.is_too_far_ahead(now):
+            raise InvalidInputException(
+                "No se puede reagendar una cita con mas de dos anos de anticipacion."
+            )
         self.slot = new_slot
 
     def reassign(self, *, patient_id: int, doctor_id: int) -> None:
