@@ -1,5 +1,5 @@
 {
-  "name": "Tormenta de Avisos - Citas Médicas",
+  "name": "Tormenta de Avisos - Citas Médicas Multicanal",
   "nodes": [
     {
       "parameters": {
@@ -13,24 +13,18 @@
       "name": "Webhook Citas Médicas",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        250,
-        300
-      ],
+      "position": [220, 300],
       "webhookId": "medical-appointment-notifications"
     },
     {
       "parameters": {
-        "jsCode": "const inputData = $input.first().json.body || $input.first().json;\n\nconst recipientPhone = inputData.recipient_phone || 'Desconocido';\nconst rawMessage = inputData.message || '';\nconst timestamp = new Date().toISOString();\n\nlet eventType = 'AVISO_GENERAL';\nif (rawMessage.toLowerCase().includes('confirmad')) {\n  eventType = 'CITA_CONFIRMADA';\n} else if (rawMessage.toLowerCase().includes('cancelad')) {\n  eventType = 'CITA_CANCELADA';\n} else if (rawMessage.toLowerCase().includes('reagendad') || rawMessage.toLowerCase().includes('cambiado')) {\n  eventType = 'CITA_REAGENDADA';\n} else if (rawMessage.toLowerCase().includes('agendad') || rawMessage.toLowerCase().includes('creada')) {\n  eventType = 'CITA_NUEVA';\n}\n\nreturn [{\n  json: {\n    evento: eventType,\n    telefono: recipientPhone,\n    mensaje: rawMessage,\n    canal: 'WhatsApp / SMS',\n    fechaProcesamiento: timestamp,\n    esCancelacion: eventType === 'CITA_CANCELADA',\n    estado: 'PROCESADO'\n  }\n}];"
+        "jsCode": "const inputData = $input.first().json.body || $input.first().json;\nconst recipientPhone = inputData.recipient_phone || 'Desconocido';\nconst rawMessage = inputData.message || '';\nconst timestamp = new Date().toISOString();\n\nlet eventType = 'AVISO_GENERAL';\nlet colorCode = 3447003; // Azul estándar\n\nif (rawMessage.toLowerCase().includes('confirmad')) {\n  eventType = 'CITA_CONFIRMADA';\n  colorCode = 3066993; // Verde\n} else if (rawMessage.toLowerCase().includes('cancelad')) {\n  eventType = 'CITA_CANCELADA';\n  colorCode = 15158332; // Rojo urgente\n} else if (rawMessage.toLowerCase().includes('reagendad') || rawMessage.toLowerCase().includes('cambiado')) {\n  eventType = 'CITA_REAGENDADA';\n  colorCode = 15844367; // Naranja\n} else if (rawMessage.toLowerCase().includes('agendad') || rawMessage.toLowerCase().includes('creada')) {\n  eventType = 'CITA_NUEVA';\n  colorCode = 3447003;\n}\n\nreturn [{\n  json: {\n    evento: eventType,\n    telefono: recipientPhone,\n    mensaje: rawMessage,\n    canal: 'WhatsApp / SMS',\n    fechaProcesamiento: timestamp,\n    esCancelacion: eventType === 'CITA_CANCELADA',\n    colorDiscord: colorCode,\n    asuntoCorreo: `[Aviso Clínico] ${eventType.replace('_', ' ')}`,\n    estado: 'PROCESADO'\n  }\n}];"
       },
       "id": "code-enrichment-node",
       "name": "Formatear y Clasificar Aviso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        480,
-        300
-      ]
+      "position": [440, 300]
     },
     {
       "parameters": {
@@ -59,36 +53,47 @@
       "name": "¿Es Cancelación?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        700,
-        300
-      ]
+      "position": [660, 300]
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconsole.log(`[N8N ALERTA CANCELACION] Aviso de cita cancelada para ${item.telefono}: ${item.mensaje}`);\nreturn $input.all();"
+        "jsCode": "const item = $input.first().json;\nconsole.log(`[DISCORD ALERTA] Cita CANCELADA para ${item.telefono}: ${item.mensaje}`);\nreturn [{\n  json: {\n    canal: 'Discord Webhook',\n    titulo: '🚨 ALERTA: Cita Médica Cancelada',\n    descripcion: item.mensaje,\n    destinatario: item.telefono,\n    color: item.colorDiscord,\n    status: 'Notificacion enviada a canal de recepcion'\n  }\n}];"
       },
-      "id": "log-cancellation-node",
-      "name": "Aviso Urgente Cancelación",
+      "id": "discord-cancellation-node",
+      "name": "Canal Discord (Alerta Urgente)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        940,
-        200
-      ]
+      "position": [900, 180]
     },
     {
       "parameters": {
-        "jsCode": "const item = $input.first().json;\nconsole.log(`[N8N AVISO ESTANDAR] Envio a ${item.telefono} [${item.evento}]: ${item.mensaje}`);\nreturn $input.all();"
+        "jsCode": "const item = $input.first().json;\nconsole.log(`[GMAIL NOTIFICACION] Enviando correo de cancelacion a paciente con telefono ${item.telefono}`);\nreturn [{\n  json: {\n    canal: 'Gmail / Correo',\n    asunto: item.asuntoCorreo,\n    cuerpo: `Estimado paciente, le informamos: ${item.mensaje}`,\n    status: 'Correo encolado para entrega'\n  }\n}];"
       },
-      "id": "log-standard-node",
-      "name": "Despacho Normal",
+      "id": "gmail-cancellation-node",
+      "name": "Canal Gmail (Correo Paciente)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        940,
-        400
-      ]
+      "position": [1120, 180]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconsole.log(`[WHATSAPP DESPACHO] Envio normal a ${item.telefono} [${item.evento}]: ${item.mensaje}`);\nreturn [{\n  json: {\n    canal: 'WhatsApp / SMS',\n    destinatario: item.telefono,\n    evento: item.evento,\n    mensaje: item.mensaje,\n    status: 'Mensaje entregado a WhatsApp Gateway'\n  }\n}];"
+      },
+      "id": "whatsapp-standard-node",
+      "name": "Canal WhatsApp (Confirmación)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconsole.log(`[DISCORD AUDITORIA] Registro de cita en bitacora: ${item.evento}`);\nreturn [{\n  json: {\n    canal: 'Discord / Logs de Auditoria',\n    evento: item.evento,\n    status: 'Registrado en bitacora clinica'\n  }\n}];"
+      },
+      "id": "audit-log-node",
+      "name": "Canal Discord (Registro de Auditoría)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 420]
     }
   ],
   "connections": {
@@ -118,14 +123,36 @@
       "main": [
         [
           {
-            "node": "Aviso Urgente Cancelación",
+            "node": "Canal Discord (Alerta Urgente)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Despacho Normal",
+            "node": "Canal WhatsApp (Confirmación)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Canal Discord (Alerta Urgente)": {
+      "main": [
+        [
+          {
+            "node": "Canal Gmail (Correo Paciente)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Canal WhatsApp (Confirmación)": {
+      "main": [
+        [
+          {
+            "node": "Canal Discord (Registro de Auditoría)",
             "type": "main",
             "index": 0
           }
