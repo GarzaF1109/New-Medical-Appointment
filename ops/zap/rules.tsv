@@ -1,0 +1,11 @@
+# Reglas de ZAP: ALERT_ID<TAB>ACCION<TAB>(comentario opcional)
+# ACCION: IGNORE | WARN | FAIL
+#
+# Nada se ignora por omision: toda alerta nueva aparece en el reporte hasta
+# que alguien la revise y decida, a conciencia, degradarla aqui con una razon
+# por escrito. Las tres de abajo se revisaron el 2026-11-02 tras corregir el
+# resto de los hallazgos de la primera corrida (ver docs/security/owasp-zap.md).
+
+10049	IGNORE	# Storable and Cacheable Content: los assets de Vite llevan hash en el nombre (cache-busting a proposito); deshabilitar el cache los haria mas lentos sin ganar seguridad.
+10055	IGNORE	# CSP style-src 'unsafe-inline': necesario porque los componentes de React escriben estilos inline (style={{...}}); una CSP con nonce para estilos es desproporcionado para el alcance actual.
+10109	IGNORE	# Modern Web Application: es informativo (detecta que es una SPA), no una vulnerabilidad.

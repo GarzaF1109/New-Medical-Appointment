@@ -9,6 +9,9 @@
 | [`development/setup.md`](development/setup.md) | Puesta en marcha |
 | [`development/workflow.md`](development/workflow.md) | GitFlow, commits, revision de codigo |
 | [`api/overview.md`](api/overview.md) | Contrato REST completo |
+| [`testing/e2e.md`](testing/e2e.md) | Pruebas E2E con Playwright |
+| [`security/owasp-zap.md`](security/owasp-zap.md) | Analisis automatizado con OWASP ZAP |
+| [`security/burp-manual-testing.md`](security/burp-manual-testing.md) | Checklist de analisis dinamico manual con Burp |
 
 ## Decisiones registradas
 
@@ -20,3 +23,4 @@
 | [004](architecture/decisions/ADR-004-notificaciones-no-bloqueantes.md) | Una notificacion fallida no revierte la operacion |
 | [005](architecture/decisions/ADR-005-api-rest-sin-verbos.md) | Transiciones de estado como subrecursos |
 | [006](architecture/decisions/ADR-006-validacion-en-el-dominio.md) | La validacion vive en el dominio y se refleja en los bordes |
+| [007](architecture/decisions/ADR-007-estrategia-de-pruebas-de-seguridad-y-e2e.md) | ZAP baseline+API (nunca bloquea), Burp manual con checklist, Playwright contra Docker |

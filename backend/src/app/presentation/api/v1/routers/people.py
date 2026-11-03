@@ -14,6 +14,7 @@ from fastapi import APIRouter, Query, Response, status
 from app.application.dto.appointment_dto import ListAppointmentsQuery
 from app.domain.ports.clock import Clock
 from app.presentation.api.errors import NotFoundHTTP
+from app.presentation.api.path_params import ResourceId
 from app.presentation.api.v1.schemas.appointment import AppointmentCollectionResponse
 from app.presentation.api.v1.schemas.people import (
     DoctorCreateRequest,
@@ -75,7 +76,7 @@ def create_patient(
     "/{patient_id}", response_model=PatientResponse, summary="Consultar un paciente"
 )
 def get_patient(
-    patient_id: int, repository: PatientRepositoryDep, clock: ClockDep
+    patient_id: ResourceId, repository: PatientRepositoryDep, clock: ClockDep
 ) -> PatientResponse:
     """Devuelve un paciente por su identificador."""
     patient = repository.get(patient_id)
@@ -94,7 +95,7 @@ def get_patient(
     },
 )
 def update_patient(
-    patient_id: int,
+    patient_id: ResourceId,
     payload: PatientUpdateRequest,
     use_case: UpdatePatientUseCaseDep,
     clock: ClockDep,
@@ -119,7 +120,7 @@ def update_patient(
         409: {"description": "El paciente conserva citas vigentes."},
     },
 )
-def delete_patient(patient_id: int, use_case: DeletePatientUseCaseDep) -> Response:
+def delete_patient(patient_id: ResourceId, use_case: DeletePatientUseCaseDep) -> Response:
     """Elimina al paciente si no tiene citas vigentes."""
     use_case.execute(patient_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -131,7 +132,7 @@ def delete_patient(patient_id: int, use_case: DeletePatientUseCaseDep) -> Respon
     summary="Listar las citas de un paciente",
 )
 def list_patient_appointments(
-    patient_id: int,
+    patient_id: ResourceId,
     use_case: QueryUseCaseDep,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
@@ -165,7 +166,7 @@ def create_doctor(payload: DoctorCreateRequest, use_case: CreateDoctorUseCaseDep
 
 
 @doctors_router.get("/{doctor_id}", response_model=DoctorResponse, summary="Consultar un doctor")
-def get_doctor(doctor_id: int, repository: DoctorRepositoryDep) -> DoctorResponse:
+def get_doctor(doctor_id: ResourceId, repository: DoctorRepositoryDep) -> DoctorResponse:
     """Devuelve un doctor por su identificador."""
     doctor = repository.get(doctor_id)
     if doctor is None:
@@ -183,7 +184,7 @@ def get_doctor(doctor_id: int, repository: DoctorRepositoryDep) -> DoctorRespons
     },
 )
 def update_doctor(
-    doctor_id: int, payload: DoctorUpdateRequest, use_case: UpdateDoctorUseCaseDep
+    doctor_id: ResourceId, payload: DoctorUpdateRequest, use_case: UpdateDoctorUseCaseDep
 ) -> DoctorResponse:
     """Actualiza los campos enviados; los ausentes se conservan."""
     doctor = use_case.execute(
@@ -205,7 +206,7 @@ def update_doctor(
         409: {"description": "El doctor conserva citas vigentes."},
     },
 )
-def delete_doctor(doctor_id: int, use_case: DeleteDoctorUseCaseDep) -> Response:
+def delete_doctor(doctor_id: ResourceId, use_case: DeleteDoctorUseCaseDep) -> Response:
     """Elimina al doctor si no tiene citas vigentes."""
     use_case.execute(doctor_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -217,7 +218,7 @@ def delete_doctor(doctor_id: int, use_case: DeleteDoctorUseCaseDep) -> Response:
     summary="Consultar la agenda de un doctor",
 )
 def list_doctor_appointments(
-    doctor_id: int,
+    doctor_id: ResourceId,
     use_case: QueryUseCaseDep,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),

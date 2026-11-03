@@ -15,6 +15,15 @@ node_modules/
 dist/
 *.local
 
+# Playwright
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+
+# Reportes de ZAP: se regeneran en cada corrida, no se versionan
+docs/security/zap-reports/*
+!docs/security/zap-reports/.gitkeep
+
 # Entorno: NUNCA versionar secretos
 .env
 .env.*

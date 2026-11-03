@@ -19,6 +19,7 @@ from app.application.dto.appointment_dto import (
     ScheduleAppointmentCommand,
 )
 from app.domain.entities.appointment import AppointmentStatus
+from app.presentation.api.path_params import POSTGRES_INT_MAX, ResourceId
 from app.presentation.api.v1.schemas.appointment import (
     AppointmentCollectionResponse,
     AppointmentResponse,
@@ -52,8 +53,8 @@ _COMMON_ERRORS: dict[int | str, dict[str, Any]] = {
 )
 def list_appointments(
     use_case: QueryUseCaseDep,
-    doctor_id: int | None = Query(default=None, alias="doctorId", gt=0),
-    patient_id: int | None = Query(default=None, alias="patientId", gt=0),
+    doctor_id: int | None = Query(default=None, alias="doctorId", gt=0, le=POSTGRES_INT_MAX),
+    patient_id: int | None = Query(default=None, alias="patientId", gt=0, le=POSTGRES_INT_MAX),
     status_filter: AppointmentStatus | None = Query(default=None, alias="status"),
     date_from: Date | None = Query(default=None, alias="dateFrom"),
     date_to: Date | None = Query(default=None, alias="dateTo"),
@@ -108,7 +109,7 @@ def schedule_appointment(
     summary="Consultar una cita",
     responses=_COMMON_ERRORS,
 )
-def get_appointment(appointment_id: int, use_case: QueryUseCaseDep) -> AppointmentResponse:
+def get_appointment(appointment_id: ResourceId, use_case: QueryUseCaseDep) -> AppointmentResponse:
     """Devuelve una cita por su identificador."""
     return AppointmentResponse.from_result(use_case.get(appointment_id))
 
@@ -127,7 +128,7 @@ def get_appointment(appointment_id: int, use_case: QueryUseCaseDep) -> Appointme
     },
 )
 def reschedule_appointment(
-    appointment_id: int,
+    appointment_id: ResourceId,
     payload: RescheduleAppointmentRequest,
     use_case: RescheduleUseCaseDep,
 ) -> AppointmentResponse:
@@ -155,7 +156,9 @@ def reschedule_appointment(
         **_COMMON_ERRORS,
     },
 )
-def confirm_appointment(appointment_id: int, use_case: StatusUseCaseDep) -> AppointmentResponse:
+def confirm_appointment(
+    appointment_id: ResourceId, use_case: StatusUseCaseDep
+) -> AppointmentResponse:
     """Registra la confirmacion de asistencia del paciente."""
     return AppointmentResponse.from_result(use_case.confirm(appointment_id))
 
@@ -169,7 +172,9 @@ def confirm_appointment(appointment_id: int, use_case: StatusUseCaseDep) -> Appo
         **_COMMON_ERRORS,
     },
 )
-def complete_appointment(appointment_id: int, use_case: StatusUseCaseDep) -> AppointmentResponse:
+def complete_appointment(
+    appointment_id: ResourceId, use_case: StatusUseCaseDep
+) -> AppointmentResponse:
     """Cierra la cita tras la consulta."""
     return AppointmentResponse.from_result(use_case.complete(appointment_id))
 
@@ -184,7 +189,9 @@ def complete_appointment(appointment_id: int, use_case: StatusUseCaseDep) -> App
         **_COMMON_ERRORS,
     },
 )
-def cancel_appointment(appointment_id: int, use_case: StatusUseCaseDep) -> AppointmentResponse:
+def cancel_appointment(
+    appointment_id: ResourceId, use_case: StatusUseCaseDep
+) -> AppointmentResponse:
     """Cancela la cita indicada."""
     return AppointmentResponse.from_result(use_case.cancel(appointment_id))
 
@@ -196,7 +203,7 @@ def cancel_appointment(appointment_id: int, use_case: StatusUseCaseDep) -> Appoi
     description="Borrado definitivo. Para el flujo clinico habitual se prefiere la cancelacion.",
     responses={404: _COMMON_ERRORS[404]},
 )
-def delete_appointment(appointment_id: int, use_case: DeleteUseCaseDep) -> Response:
+def delete_appointment(appointment_id: ResourceId, use_case: DeleteUseCaseDep) -> Response:
     """Elimina la cita del sistema."""
     use_case.execute(appointment_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

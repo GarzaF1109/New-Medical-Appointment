@@ -33,6 +33,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/setupTests.ts"],
+    // `e2e/` tiene sus propios specs de Playwright; sin este exclude, vitest
+    // los recoge con su patron por defecto y falla porque usan otro runner.
+    exclude: ["**/node_modules/**", "**/dist/**", "e2e/**"],
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

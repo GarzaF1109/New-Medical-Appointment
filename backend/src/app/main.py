@@ -16,6 +16,7 @@ from app.infrastructure.config import get_settings
 from app.infrastructure.observability.telemetry import configure_telemetry
 from app.infrastructure.persistence.database import create_schema
 from app.presentation.api.errors import register_exception_handlers
+from app.presentation.api.security_headers import add_security_headers
 from app.presentation.api.v1.routers.appointments import router as appointments_router
 from app.presentation.api.v1.routers.people import doctors_router, patients_router
 
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    add_security_headers(app)
     register_exception_handlers(app)
 
     app.include_router(appointments_router, prefix=API_V1_PREFIX)
