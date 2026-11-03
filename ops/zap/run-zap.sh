@@ -41,7 +41,7 @@ echo "==> Baseline scan (crawling pasivo de la interfaz)"
 docker run --rm $HOST_GATEWAY_FLAG \
   -v "$REPORT_DIR:/zap/wrk/:rw" \
   "$ZAP_IMAGE" zap-baseline.py \
-  -t http://host.docker.internal:8080 \
+  -t http://host.docker.internal:8085 \
   -r baseline-report.html \
   -J baseline-report.json \
   -c /zap/wrk/rules.tsv \

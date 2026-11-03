@@ -139,7 +139,7 @@ jobs:
       - name: Pruebas E2E contra la pila de Docker
         working-directory: frontend
         env:
-          E2E_BASE_URL: http://localhost:8080
+          E2E_BASE_URL: http://localhost:8085
         run: npx playwright test --config=e2e/playwright.config.ts
 
       - name: Publicar reporte de Playwright
