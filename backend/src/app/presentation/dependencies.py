@@ -40,6 +40,7 @@ from app.domain.ports.repositories import (
 from app.infrastructure.clock import SystemClock
 from app.infrastructure.config import Settings, get_settings
 from app.infrastructure.notifications.logging_sender import LoggingNotificationSender
+from app.infrastructure.notifications.n8n_sender import N8nWebhookSender
 from app.infrastructure.notifications.twilio_whatsapp_sender import TwilioWhatsAppSender
 from app.infrastructure.persistence.database import SessionFactory
 from app.infrastructure.persistence.sqlalchemy_repositories import (
@@ -90,6 +91,8 @@ def get_notification_sender(settings: SettingsDep) -> NotificationSender:
     # Se comprueban los tres campos y no `settings.notifications_enabled` -el
     # mismo predicado- porque asi el verificador de tipos sabe que dentro del
     # `if` ninguno puede ser None.
+    if settings.n8n_webhook_url:
+        return N8nWebhookSender(webhook_url=settings.n8n_webhook_url)
     account_sid = settings.twilio_account_sid
     auth_token = settings.twilio_auth_token
     sender = settings.twilio_whatsapp_from

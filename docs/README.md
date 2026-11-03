@@ -24,3 +24,5 @@
 | [005](architecture/decisions/ADR-005-api-rest-sin-verbos.md) | Transiciones de estado como subrecursos |
 | [006](architecture/decisions/ADR-006-validacion-en-el-dominio.md) | La validacion vive en el dominio y se refleja en los bordes |
 | [007](architecture/decisions/ADR-007-estrategia-de-pruebas-de-seguridad-y-e2e.md) | ZAP baseline+API (nunca bloquea), Burp manual con checklist, Playwright contra Docker |
+| [008](architecture/decisions/ADR-008-automatizacion-con-n8n.md) | Automatización y orquestación de avisos con n8n |
+

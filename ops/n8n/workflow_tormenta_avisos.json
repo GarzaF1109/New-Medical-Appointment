@@ -1,0 +1,138 @@
+{
+  "name": "Tormenta de Avisos - Citas Médicas",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "medical-appointment-notifications",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "webhook-trigger-node",
+      "name": "Webhook Citas Médicas",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "medical-appointment-notifications"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json.body || $input.first().json;\n\nconst recipientPhone = inputData.recipient_phone || 'Desconocido';\nconst rawMessage = inputData.message || '';\nconst timestamp = new Date().toISOString();\n\nlet eventType = 'AVISO_GENERAL';\nif (rawMessage.toLowerCase().includes('confirmad')) {\n  eventType = 'CITA_CONFIRMADA';\n} else if (rawMessage.toLowerCase().includes('cancelad')) {\n  eventType = 'CITA_CANCELADA';\n} else if (rawMessage.toLowerCase().includes('reagendad') || rawMessage.toLowerCase().includes('cambiado')) {\n  eventType = 'CITA_REAGENDADA';\n} else if (rawMessage.toLowerCase().includes('agendad') || rawMessage.toLowerCase().includes('creada')) {\n  eventType = 'CITA_NUEVA';\n}\n\nreturn [{\n  json: {\n    evento: eventType,\n    telefono: recipientPhone,\n    mensaje: rawMessage,\n    canal: 'WhatsApp / SMS',\n    fechaProcesamiento: timestamp,\n    esCancelacion: eventType === 'CITA_CANCELADA',\n    estado: 'PROCESADO'\n  }\n}];"
+      },
+      "id": "code-enrichment-node",
+      "name": "Formatear y Clasificar Aviso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.esCancelacion }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-cancelled-node",
+      "name": "¿Es Cancelación?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconsole.log(`[N8N ALERTA CANCELACION] Aviso de cita cancelada para ${item.telefono}: ${item.mensaje}`);\nreturn $input.all();"
+      },
+      "id": "log-cancellation-node",
+      "name": "Aviso Urgente Cancelación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconsole.log(`[N8N AVISO ESTANDAR] Envio a ${item.telefono} [${item.evento}]: ${item.mensaje}`);\nreturn $input.all();"
+      },
+      "id": "log-standard-node",
+      "name": "Despacho Normal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Citas Médicas": {
+      "main": [
+        [
+          {
+            "node": "Formatear y Clasificar Aviso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear y Clasificar Aviso": {
+      "main": [
+        [
+          {
+            "node": "¿Es Cancelación?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Cancelación?": {
+      "main": [
+        [
+          {
+            "node": "Aviso Urgente Cancelación",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Despacho Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {}
+}

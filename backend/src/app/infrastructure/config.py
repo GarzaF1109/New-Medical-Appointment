@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     twilio_auth_token: str | None = None
     twilio_whatsapp_from: str | None = None
 
+    n8n_webhook_url: str | None = None
+
     otel_enabled: bool = Field(default=False)
     otel_exporter_otlp_endpoint: str = Field(default="http://localhost:4317")
 

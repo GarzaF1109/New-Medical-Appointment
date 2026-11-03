@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: medical
       POSTGRES_DB: medical
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,12 +20,13 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://medical:medical@db:5432/medical
       ENVIRONMENT: docker
-      CORS_ORIGINS: '["http://localhost:8080"]'
+      CORS_ORIGINS: '["http://localhost:8080", "http://localhost:8085"]'
       OTEL_ENABLED: "false"
-      # Sin credenciales de Twilio la app usa el notificador de bitacora.
+      # Sin credenciales de Twilio ni N8N la app usa el notificador de bitacora.
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
       TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM:-}
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://n8n:5678/webhook/medical-appointment-notifications}
     ports:
       - "8000:8000"
     depends_on:
@@ -35,9 +36,23 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "8080:80"
+      - "8085:80"
     depends_on:
       - backend
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=America/Mexico_City
+    volumes:
+      - n8n_data:/home/node/.n8n
+
 volumes:
   pgdata:
+  n8n_data:

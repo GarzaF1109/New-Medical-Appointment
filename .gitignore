@@ -34,3 +34,5 @@ docs/security/zap-reports/*
 .idea/
 .vscode/
 *.tsbuildinfo
+TormentaDeAvisos/
+
